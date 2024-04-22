@@ -21,9 +21,9 @@ class TestMain(unittest.TestCase):
     def test_is_iss_directly_overhead(self, mock_get):
         """
         Because there is a raise_for_status within the method, you have
-        to make sure that it is also mocked.
-        :param mock_get:
-        :return:
+        to make sure that it is also mocked. The lambda: None, is basically
+        making the raise_for_status() function not raise any exception and do nothing.
+        :param mock_get: return parameter from the patched app.requests.get
         """
         mock_get.return_value.json.return_value = {
             "iss_position": {"latitude": self.MY_LAT, "longitude": self.MY_LONG},
@@ -49,10 +49,22 @@ class TestMain(unittest.TestCase):
 
     @patch('app.requests.get')
     def test_api_failure(self, mock_get):
-        # Simulate an API failure
+        """
+        `With statement` - here is used for exception handling and for ensuring
+        that setup and cleanup actions are completed.
+
+        When you use `with self.assertRaises(SomeException)`, you're setting up
+        a context block where you expect `SomeException` to be raised. If `SomeException`
+        is raised during the execution of the code block INSIDE the `with` statement,
+        the test passes. Otherwise, it fails.
+        :param mock_get:
+        :return:
+        """
+        # Simulate an API failure from is_iss_overhead()
         mock_get.side_effect = requests.exceptions.HTTPError("API error")
 
         with self.assertRaises(requests.exceptions.HTTPError):
+            # must raise an error to pass the test
             is_iss_overhead()
 
 
